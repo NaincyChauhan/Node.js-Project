@@ -14,8 +14,6 @@ function Router() {
                 <Route path='/register' element={<RegisterPage />} />
             </Route>
 
-            {/* Page Not Found */}
-            <Route path='*' element={<NotFound />} />
         </Routes>
     );
 }

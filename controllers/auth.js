@@ -70,8 +70,8 @@ exports.login = async (req, res) => {
         if(!user || !(await bcrypt.compare(password, user.password ))){
             return res.status(401).json({
                 status: 'Error',
-                message: 'Invalid credentials',
-                errors: [{error: 'Invalid Credentials.'}]
+                msg: 'Invalid credentials',
+                errors: [{ msg: "Invalid credentials"}]
             });
         }
 
@@ -84,8 +84,8 @@ exports.login = async (req, res) => {
 
         return res.status(200).json({
             status: 'Success',
-            message: 'Logged in successfully.',
-            data: {
+            msg: 'Logged in successfully.',
+            user: {
                 name: user.name,
                 email: user.email,
                 token
@@ -95,7 +95,7 @@ exports.login = async (req, res) => {
         return res.status(500).json({ 
             status: 'Error',
             error,
-            message: 'Internal Server Error.'
+            msg: 'Internal Server Error.'
         });
     }
 }

@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const passport = require('passport');
+const cookieParser = require('cookie-parser');
+const cors = require("cors");
 
 require('dotenv').config();
 require('./config/passport');
@@ -9,6 +11,11 @@ require('./config/passport');
 const app = express();
 
 // Middlewares
+app.use(cors({
+    origin: "http://localhost:3000", // allow frontend
+    credentials: true, // allow cookies & headers like CSRF
+}));
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
