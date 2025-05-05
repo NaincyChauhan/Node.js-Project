@@ -6,3 +6,19 @@ export const storeToken = (token) => {
     };
     localStorage.setItem('authToken', JSON.stringify(item));
 }
+
+export const getToken = () => {
+    const itemStr = localStorage.getItem('authToken');
+    if (!itemStr) return null;
+
+    const item = JSON.parse(itemStr);
+    const now = new Date();
+
+    if (now.getTime() > item.expiry) {
+        // Token expired
+        localStorage.removeItem('authToken');
+        return null;
+    }
+
+    return item.token;
+};
