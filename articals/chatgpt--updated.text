@@ -1,0 +1,1279 @@
+Great start! Here's a professionally revised version of **Part 1** of your article. I've corrected grammar, improved sentence structure, and added clear **code explanations** where you mentioned them.
+
+---
+
+## How to Build a User Authentication System in Node.js with Express, PostgreSQL, and React from Scratch
+
+### Step 1: Create a New Node.js Project
+
+First, initialize a new Node.js project by running:
+
+```bash
+npm init
+```
+
+### Step 2: Install Express and Nodemon
+
+Next, install Express (a web framework for Node.js) and Nodemon (a development tool that automatically restarts the server on file changes):
+
+```bash
+npm install express nodemon
+```
+
+### Step 3: Add Scripts to `package.json`
+
+Open the `package.json` file and add the following scripts:
+
+```json
+"scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+}
+```
+
+These scripts allow you to start the server with `npm start` and run it in development mode using `npm run dev`.
+
+### Step 4: Set Environment Variables
+
+Create a `.env` file in the root directory and add your port configuration:
+
+```env
+PORT=8000
+```
+
+### Step 5: Install `dotenv`
+
+Install the `dotenv` package to load environment variables from your `.env` file:
+
+```bash
+npm install dotenv
+```
+
+### Step 6: Create `index.js`
+
+Now, create a file named `index.js` and add the following code:
+
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+require('dotenv').config();
+
+const app = express();
+
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.use('/', (req, res) => {
+    return res.json({ msg: "This is the home page." });
+});
+
+app.listen(process.env.PORT, async () => {
+    console.log(`Server started on port: ${process.env.PORT}`); 
+});
+```
+
+#### Code Explanation:
+
+* `express`: Imports the Express framework.
+* `body-parser`: Parses incoming request bodies so they can be accessed via `req.body`.
+* `dotenv`: Loads environment variables from the `.env` file.
+* `app.use(...)`: Registers middleware to parse URL-encoded and JSON payloads.
+* `app.use('/', ...)`: Defines a simple route for the home page.
+* `app.listen(...)`: Starts the server and listens on the specified port.
+
+---
+
+## Step 7: Connect to PostgreSQL Database
+
+Now, let’s connect the Node.js application to a PostgreSQL database.
+
+> **Note:** This article assumes that PostgreSQL is already installed on your system. If not, download and install it from: [PostgreSQL Downloads](https://www.postgresql.org/download/windows/)
+
+### Step 8: Install Sequelize and PostgreSQL Dependencies
+
+We will use **Sequelize**, a promise-based Node.js ORM, to define models and interact with the PostgreSQL database. Additionally, install:
+
+* **sequelize-cli**: A command-line tool for Sequelize to automate common tasks like creating models and migrations.
+* **pg**: PostgreSQL driver for Node.js, used internally by Sequelize.
+* **pg-hstore**: A serializer/deserializer for PostgreSQL's hstore format.
+
+Install these dependencies:
+
+```bash
+npm install --save sequelize pg pg-hstore
+npm install --save-dev sequelize-cli
+```
+
+### Step 9: Initialize Sequelize
+
+Run the following command to initialize Sequelize:
+
+```bash
+npx sequelize-cli init
+```
+
+This creates the following folder structure:
+
+* `config/`: Contains the database configuration.
+* `models/`: Contains Sequelize models.
+* `migrations/`: Contains migration files.
+* `seeders/`: Contains seed data files.
+
+---
+
+## Step 10: Add Database Configuration
+
+In your `.env` file, add the database configuration:
+
+```env
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+DB_DATABASE=your_database_name
+DB_HOST=127.0.0.1
+DB_DIALECT=postgres
+DB_PORT=5432
+```
+
+### Step 11: Modify `config/config.json` to Use Environment Variables
+
+Since we want to use environment variables in the config, rename `config/config.json` to `config/config.js`. Replace its content with the following code:
+
+```javascript
+require('dotenv').config();
+
+module.exports = {
+    development: {
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        host: process.env.DB_HOST,
+        dialect: process.env.DB_DIALECT,
+        port: process.env.DB_PORT,
+    },
+    test: {
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        host: process.env.DB_HOST,
+        dialect: process.env.DB_DIALECT,
+        port: process.env.DB_PORT,
+    },
+    production: {
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        host: process.env.DB_HOST,
+        dialect: process.env.DB_DIALECT,
+        port: process.env.DB_PORT,
+    },
+};
+```
+
+#### Code Explanation:
+
+This script configures Sequelize for different environments (development, test, production) using values from your `.env` file, ensuring your credentials are not hardcoded.
+
+---
+
+### Step 12: Update `models/index.js` to Use the JS Config File
+
+Open `models/index.js` and update the line:
+
+```javascript
+const config = require(__dirname + '/../config/config.json')[env];
+```
+
+to:
+
+```javascript
+const config = require(__dirname + '/../config/config.js')[env];
+```
+
+#### Code Explanation:
+
+This change allows Sequelize to use the environment-based configuration from `config.js` instead of the default `config.json`.
+
+---
+
+At this point, your PostgreSQL database is successfully connected to your Node.js app. You’re now ready to start creating models and migrations.
+
+---
+
+Here's a professional and polished version of **Part 2** of your article, with grammar corrected, formatting improved, and clear **code explanations** added where needed.
+
+---
+
+## Part 2: Creating the User Model and Authentication Routes
+
+In this part, we will:
+
+* Create the PostgreSQL database.
+* Define the User model and its migration.
+* Set up registration using Express, Sequelize, and JWT.
+* Encrypt passwords using `bcryptjs`.
+* Validate input using `express-validator`.
+
+---
+
+### Step 1: Create the Database
+
+Use Sequelize CLI to create the database as defined in your `.env` file:
+
+```bash
+npx sequelize-cli db:create
+```
+
+---
+
+### Step 2: Generate User Migration
+
+Generate a migration file for the `Users` table:
+
+```bash
+npx sequelize-cli migration:generate --name create-user-table
+```
+
+This command creates a migration file in the `migrations/` folder, for example:
+
+```
+migrations/20250502045839-create-user-table.js
+```
+
+Edit the file and add the following code:
+
+```javascript
+'use strict';
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+    async up(queryInterface, Sequelize) {
+        await queryInterface.createTable('Users', {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER,
+            },
+            name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            email: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                unique: true,
+            },
+            email_verified_at: {
+                type: Sequelize.DATE,
+            },
+            password: {
+                type: Sequelize.STRING,
+                allowNull: false
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+            },
+            updatedAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+            }
+        });
+    },
+
+    async down(queryInterface, Sequelize) {
+        await queryInterface.dropTable('Users');
+    }
+};
+```
+
+#### Code Explanation:
+
+* `createTable('Users')`: Creates the `Users` table with the specified columns.
+* `id`: Primary key, auto-incremented integer.
+* `name`, `email`, `password`: Required fields for user registration.
+* `email_verified_at`: Optional timestamp to track email verification.
+* `createdAt`, `updatedAt`: Automatically managed timestamps.
+
+---
+
+### Step 3: Create the User Model
+
+Create a file named `user.js` inside the `models/` folder and add the following:
+
+```javascript
+'use strict';
+
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+    class User extends Model {
+        // You can define associations here
+        // static associate(models) {}
+    }
+
+    User.init({
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true,
+            }
+        },
+        email_verified_at: {
+            type: DataTypes.DATE,
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        }
+    }, {
+        sequelize,
+        modelName: 'User',
+    });
+
+    return User;
+};
+```
+
+#### Code Explanation:
+
+* `User.init(...)`: Initializes the `User` model with the schema.
+* Validates that the email field contains a valid email address.
+* Ensures all required fields are provided.
+
+---
+
+### Step 4: Run the Migration
+
+Apply the migration to create the `Users` table in the database:
+
+```bash
+npx sequelize-cli db:migrate
+```
+
+---
+
+### Step 5: Create Routes for Authentication
+
+Create a `routes/` folder in the root directory and add a file named `auth.js`.
+
+Install `express-validator` for request validation:
+
+```bash
+npm install express-validator
+```
+
+Add the following code to `routes/auth.js`:
+
+```javascript
+const { Router } = require("express");
+const { body } = require('express-validator');
+const { register } = require("../controllers/auth");
+
+const router = Router();
+
+const validateRegister = [
+    body('name').isLength({ min: 4 }).notEmpty().withMessage('Oops! Name is required.').trim().escape(),
+    body('email').isEmail().notEmpty().withMessage('Oops! Email is required.').trim().escape(),
+    body('password').isLength({ min: 8 }).withMessage('Oops! Password must be at least 8 characters.').trim().escape(),
+];
+
+router.post('/register', validateRegister, register);
+
+module.exports = router;
+```
+
+#### Code Explanation:
+
+* Uses `express-validator` to validate the registration form.
+* Checks that name has at least 4 characters, email is valid, and password has a minimum of 8 characters.
+* Passes validated data to the `register` controller.
+
+---
+
+### Step 6: Set Up Authentication Logic
+
+Install required dependencies for authentication and password hashing:
+
+```bash
+npm install passport passport-jwt jsonwebtoken bcryptjs
+```
+
+Create a `controllers/` folder and add `auth.js` inside it. Add the following code:
+
+```javascript
+const { validationResult } = require("express-validator");
+const db = require('../models');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
+require('dotenv').config();
+const User = db.User;
+
+exports.register = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(401).json({
+            status: 'error',
+            msg: 'Validation error',
+            errors: errors.array()
+        });
+    }
+
+    try {
+        const { name, email, password } = req.body;
+
+        // Hash password before saving
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+        });
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: process.env.JWT_EXPIRATION_TIME }
+        );
+
+        return res.status(200).json({
+            status: 'Success',
+            msg: 'User created successfully.',
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                token
+            },
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'error',
+            msg: 'Internal Server Error.',
+            errors: error
+        });
+    }
+};
+```
+
+#### Code Explanation:
+
+* Validates incoming request data.
+* Hashes the user's password using `bcryptjs`.
+* Creates a new user in the database.
+* Generates a JWT token using the user's ID and environment-defined secret.
+* Returns the user details along with the authentication token.
+
+---
+
+### Sample Response on Successful Registration
+
+```json
+{
+    "status": "Success",
+    "msg": "User created successfully.",
+    "user": {
+        "id": 3,
+        "name": "testing user1",
+        "email": "test1@gmail.com",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+}
+```
+
+---
+
+Here is the professionally revised and fully structured **Part 3** of your article, including grammatical corrections, improved formatting, and **clear code explanations** as requested:
+
+---
+
+## Part 3: Implementing Login and Protected Dashboard in Node.js with JWT
+
+In this part, we'll complete the authentication system by:
+
+* Adding a login function.
+* Implementing JWT-based user authentication using Passport.
+* Creating a protected dashboard route.
+
+---
+
+### Step 1: Add the Login and Dashboard Functions
+
+Open your `controllers/auth.js` file and add the following functions:
+
+```javascript
+exports.login = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(401).json({
+            status: 'error',
+            msg: 'Validation error',
+            errors: errors.array()
+        });
+    }
+    
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ where: { email } });
+        
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({
+                status: 'Error',
+                msg: 'Invalid credentials',
+                errors: [{ msg: "Invalid credentials" }]
+            });
+        }
+
+        const token = jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: process.env.JWT_EXPIRATION_TIME }
+        );
+
+        return res.status(200).json({
+            status: 'Success',
+            msg: 'Logged in successfully.',
+            user: {
+                name: user.name,
+                email: user.email,
+                token
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({ 
+            status: 'Error',
+            error,
+            msg: 'Internal Server Error.'
+        });
+    }
+};
+
+exports.dashboard = async (req, res) => {
+    return res.status(200).json({
+        msg: "This is the Dashboard Page."
+    });
+};
+```
+
+#### Code Explanation:
+
+* `login`: Validates email and password, checks user existence, compares the hashed password, generates a JWT token, and returns user details.
+* `dashboard`: A simple route that returns a message. It will later be protected using JWT.
+
+---
+
+### Step 2: Add Login Route
+
+Update `routes/auth.js` to include the login route and validation logic:
+
+```javascript
+const validateLogin = [
+    body('email').isEmail().notEmpty().withMessage('Oops! Email is required.').trim().escape(),
+    body('password').notEmpty().withMessage('Oops! Password is required.').trim().escape(),
+];
+
+router.post('/login', validateLogin, login);
+```
+
+#### Code Explanation:
+
+* Validates the login request ensuring email is valid and password is not empty.
+* Uses `login` controller to handle the authentication logic.
+
+---
+
+### Step 3: Configure Passport JWT Strategy
+
+Create a new file `config/passport.js` and add the following code:
+
+```javascript
+const { ExtractJwt, Strategy: JwtStrategy } = require('passport-jwt');
+const passport = require('passport');
+const db = require('../models');
+const User = db.User;
+
+require('dotenv').config();
+
+const options = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET_KEY,
+};
+
+passport.use(new JwtStrategy(options, async (jwt_payload, done) => {
+    try {
+        const user = await User.findByPk(jwt_payload.id);
+        if (!user) return done(null, false);
+        return done(null, user);
+    } catch (error) {
+        done(error, false);
+    }
+}));
+
+module.exports = passport;
+```
+
+#### Code Explanation:
+
+* Configures Passport to use the JWT strategy.
+* Extracts the token from the `Authorization` header.
+* Verifies the token using the secret and fetches the corresponding user.
+
+---
+
+### Step 4: Initialize Passport in `index.js`
+
+Update your `index.js` file to initialize Passport:
+
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const authRoutes = require('./routes/auth');
+const passport = require('passport');
+
+require('dotenv').config();
+require('./config/passport');
+
+const app = express();
+
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(passport.initialize());
+
+// Routes
+app.use('/api', authRoutes);
+app.use('/', (req, res) => {
+    return res.json({ msg: "This is the home page." });
+});
+
+app.listen(process.env.PORT, async () => {
+    console.log(`Server started at port: ${process.env.PORT}`);
+});
+```
+
+#### Code Explanation:
+
+* Ensures `passport.initialize()` is called before your routes.
+* Loads environment variables and passport configuration.
+
+---
+
+### Step 5: Create JWT Authentication Middleware
+
+Create a new file `middlewares/authenticateJWT.js` and add the following:
+
+```javascript
+const passport = require('passport');
+
+const authenticateJWT = (req, res, next) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+        if (err) {
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        if (!user) {
+            if (info?.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Token expired, please log in again.' });
+            }
+
+            if (info?.message === 'No auth token') {
+                return res.status(401).json({ message: 'No token provided' });
+            }
+
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        req.user = user;
+        next();
+    })(req, res, next);
+};
+
+module.exports = authenticateJWT;
+```
+
+#### Code Explanation:
+
+* Wraps `passport.authenticate()` to handle JWT authentication manually.
+* Returns appropriate error messages for expired or invalid tokens.
+* On success, attaches the authenticated user to `req.user`.
+
+---
+
+### Step 6: Add Dashboard Route with Middleware
+
+Update `routes/auth.js` to include the protected dashboard route:
+
+```javascript
+const authenticateJWT = require("../middlewares/authenticateJWT");
+
+router.get('/dashboard', authenticateJWT, dashboard);
+```
+
+#### Code Explanation:
+
+* Adds the `authenticateJWT` middleware to protect the dashboard route.
+* Only authenticated users with a valid JWT can access this route.
+
+---
+
+### Example: Accessing the Dashboard
+
+Make a request to `/api/dashboard` with the token returned from login:
+
+```http
+GET /api/dashboard
+Authorization: Bearer <your_token>
+```
+
+**Response:**
+
+```json
+{
+    "msg": "This is the Dashboard Page."
+}
+```
+
+---
+
+Thank you! Here's the **professionally rewritten and corrected version** of your **Part 4** article, including grammar fixes, formatting improvements, and clear **code explanations** after each block:
+
+*************************************************************
+
+## 🔧 Part 4: Creating the Frontend with React.js
+
+Now that the backend system for user authentication is complete, let's move on to building the frontend using **React.js**.
+
+### 1. Initialize a New React Project
+
+Open your terminal and run the following command to create a new React app:
+
+```bash
+npx create-react-app frontend
+```
+
+Navigate to the project directory:
+
+```bash
+cd frontend
+```
+
+### 2. Install Required Packages
+
+Install the dependencies needed for Redux and routing:
+
+```bash
+npm install redux react-redux @reduxjs/toolkit react-router-dom
+```
+
+---
+
+## ⚙️ 3. Setup Redux
+
+Create the following directory structure:
+
+```
+redux/
+├── slices/
+│   └── userSlice.js
+└── store.js
+```
+
+### `userSlice.js`
+
+```js
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialState = {
+    data: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        profile_image: '',
+        fullname: '',
+    },
+    isAuthenticated: false,
+};
+
+const userSlice = createSlice({
+    name: 'user',
+    initialState,
+    reducers: {
+        login: (state, action) => {
+            const { data } = action.payload;
+            state.data = data;
+            state.isAuthenticated = true;
+        },
+        logout: (state) => {
+            state.data = {
+                firstName: '',
+                lastName: '',
+                email: '',
+                profile_image: '',
+                fullname: '',
+            };
+            state.isAuthenticated = false;
+        },
+    },
+});
+
+export const { login, logout } = userSlice.actions;
+export default userSlice.reducer;
+```
+
+### 🔍 Code Explanation
+
+This file defines the Redux slice for managing user authentication. It initializes the state and provides two reducers:
+
+* `login`: Updates the user data and sets `isAuthenticated` to `true`.
+* `logout`: Resets the user data and marks the user as logged out.
+
+---
+
+### `store.js`
+
+```js
+import { configureStore } from '@reduxjs/toolkit';
+import userSlice from './slices/userSlice';
+
+export const store = configureStore({
+    reducer: {
+        user: userSlice,
+    }
+});
+```
+
+### 🔍 Code Explanation
+
+This configures the Redux store and integrates the `userSlice` reducer, which allows global access to authentication state across the application.
+
+---
+
+## 🧩 4. Configure `index.js`
+
+Update the `index.js` file in the root of the `frontend` directory:
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { store } from './redux/store';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+    <React.StrictMode>
+        <Router>
+            <Provider store={store}>
+                <App />
+            </Provider>
+        </Router>
+    </React.StrictMode>
+);
+```
+
+### 🔍 Code Explanation
+
+* **Router**: Enables navigation across pages.
+* **Provider**: Makes the Redux store available to the entire app.
+
+---
+
+## 📦 5. Setup App.js
+
+Update `App.js`:
+
+```js
+import Router from './routes';
+
+function App() {
+    return <Router />;
+}
+
+export default App;
+```
+
+### 🔍 Code Explanation
+
+This component simply loads the routing system from the `routes` folder.
+
+---
+
+## 🗺️ 6. Define Application Routes
+
+Create a new folder called `routes` and inside it, create `index.js`:
+
+```js
+import { Routes, Route } from 'react-router-dom';
+
+import LoginPage from '../pages/auth/LoginPage';
+import RegisterPage from '../pages/auth/RegisterPage';
+import Home from '../pages/Home';
+
+function Router() {
+    return (
+        <Routes>
+            {/* Public Routes */}
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='/register' element={<RegisterPage />} />
+            {/* Page Not Found */}
+            <Route path='*' element={<div>404 - Page Not Found</div>} />
+        </Routes>
+    );
+}
+
+export default Router;
+```
+
+### 🔍 Code Explanation
+
+This file defines the routing structure using React Router. It includes routes for Home, Login, Register, and a fallback for undefined routes.
+
+---
+
+## 🔑 7. Create Login Page
+
+Create `LoginPage.js` inside `pages/auth/`:
+
+```jsx
+import React, { useState } from 'react';
+import { login } from "../../api/auth";
+import { login as loginReducer } from '../../redux/slices/userSlice';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { storeToken } from '../../auth/token';
+
+export default function LoginPage() {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const [credentials, setCredentials] = useState({ email: "", password: "" });
+    const [message, setMessage] = useState("");
+    const [errors, setErrors] = useState([]);
+
+    const handleChange = (e) => {
+        setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrors([]);
+        setMessage("");
+
+        const response = await login(credentials);
+
+        if (response.status === "Success") {
+            const user = response.user;
+            setMessage(response.msg);
+            storeToken(user.token);
+            dispatch(loginReducer({ data: { name: user.name, email: user.email } }));
+            navigate('/');
+        } else {
+            setErrors(response.errors || [{ msg: response.msg }]);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <h2>Login</h2>
+            {errors.map((err, idx) => (
+                <p key={idx} style={{ color: 'red' }}>{err.msg}</p>
+            ))}
+            {message && <p style={{ color: 'green' }}>{message}</p>}
+
+            <input type='email' name='email' placeholder='Email' onChange={handleChange} />
+            <input type='password' name='password' placeholder='Password' onChange={handleChange} />
+            <button type='submit'>Login</button>
+        </form>
+    );
+}
+```
+
+### 🔍 Code Explanation
+
+* Uses local state to handle form inputs.
+* On submit, it calls the login API, stores the token, updates Redux state, and redirects to the homepage.
+
+---
+
+In the next section, you can continue by creating the **RegisterPage**, the **Home** page, and API utilities (`api/auth.js`, `auth/token.js`), as mentioned in your draft.
+
+Would you like me to continue polishing and explaining the **remaining code in Part 4**, including the register page and token storage?
+
+
+Excellent! You're now finishing up the **React + Node.js full-stack authentication system**. Let's recap and wrap up what you've accomplished in **✅ Part 5** and ensure everything is ready to test.
+
+---
+
+## ✅ Part 5 Summary: Frontend & Backend Integration
+
+### 📁 1. `api/auth.js` – API Functions
+
+You've created `login` and `register` API call functions:
+
+```js
+const API_URL = 'http://127.0.0.1:8000';
+
+// Login User
+export const login = async (credentials) => {
+    const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+    });
+    return res.json();
+};
+
+// Register User
+export const register = async (userData) => {
+    const res = await fetch(`${API_URL}/api/register`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+    });
+    return res.json();
+};
+```
+
+---
+
+### 🔐 2. `auth/token.js` – Token Storage
+
+Simple localStorage-based token manager:
+
+```js
+export const storeToken = (token) => {
+    const now = new Date();
+    const item = {
+        token: token,
+        expiry: now.getTime() + 60 * 60 * 1000 // 1 hour expiry
+    };
+    localStorage.setItem('authToken', JSON.stringify(item));
+};
+```
+
+---
+
+### 🧾 3. `RegisterPage.js` – Frontend Form
+
+You've created a `RegisterPage` with state handling, API calls, Redux login, and redirecting. ✅
+
+Same for `LoginPage.js`.
+
+---
+
+### 🌐 4. Backend CORS & Cookie Config (`index.js`)
+
+Added CORS + cookieParser so frontend (React) can communicate securely with backend (Node/Express):
+
+```js
+const cookieParser = require('cookie-parser');
+const cors = require("cors");
+
+// Middleware setup
+app.use(cors({
+    origin: "http://localhost:3000",  // React frontend
+    credentials: true                 // allow cookies/headers
+}));
+app.use(cookieParser());
+```
+
+---
+
+### ⚙️ 5. React Proxy (Frontend)
+
+In `frontend/package.json`, this ensures React forwards API calls to the Node server:
+
+```json
+"proxy": "http://127.0.0.1:8000",
+```
+
+---
+
+## ✅ Final Steps to Test
+
+1. **Start Backend:**
+
+   ```bash
+   node index.js
+   ```
+
+2. **Start Frontend:**
+
+   ```bash
+   npm start
+   ```
+
+3. Navigate to:
+
+   * `http://localhost:3000/register` to create a new user
+   * `http://localhost:3000/login` to log in
+
+4. After login, check:
+
+   * `localStorage` contains `authToken`
+   * Redux `user` state is updated
+   * Token is attached to future requests (if implemented later)
+
+---
+
+## 📦 Optional Improvements
+
+* Protect dashboard routes via a `PrivateRoute`
+* Auto-refresh token before expiry
+* Show user info on Home/dashboard
+* Implement logout button with Redux `logout` and token cleanup
+
+Would you like help adding protected routes or a logout flow next?
+
+
+
+
+
+
+Great! Let’s **add protected routes** and a **logout flow** to complete the auth system in a clean and scalable way.
+
+---
+
+## ✅ 1. Add `PrivateRoute` Component
+
+We’ll use a component to **restrict access to authenticated users**.
+
+### 📁 Create `components/PrivateRoute.js`
+
+```jsx
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+
+const PrivateRoute = ({ children }) => {
+    const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+export default PrivateRoute;
+```
+
+---
+
+## ✅ 2. Protect Dashboard Route
+
+Assuming you have a `Dashboard` component, update your `routes/index.js` like this:
+
+```jsx
+import Dashboard from '../pages/Dashboard';
+import PrivateRoute from '../components/PrivateRoute';
+
+// Inside <Routes>
+<Route
+    path="/dashboard"
+    element={
+        <PrivateRoute>
+            <Dashboard />
+        </PrivateRoute>
+    }
+/>
+```
+
+---
+
+## ✅ 3. Add Logout Functionality
+
+### 🔁 Update `userSlice.js`
+
+Fix the small logic error in `logout`:
+
+```js
+logout: (state) => {
+    state.data = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        profile_image: '',
+        fullname: '',
+    };
+    state.isAuthenticated = false; // FIXED
+}
+```
+
+---
+
+### 🔓 Add Logout Button
+
+You can put this in `Home.js`, `Navbar`, or any component:
+
+```jsx
+import { useDispatch } from 'react-redux';
+import { logout } from '../redux/slices/userSlice';
+
+export default function LogoutButton() {
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        dispatch(logout());
+    };
+
+    return (
+        <button onClick={handleLogout}>
+            Logout
+        </button>
+    );
+}
+```
+
+---
+
+## ✅ 4. Show User Info on Dashboard (Optional)
+
+In `Dashboard.js`:
+
+```jsx
+import { useSelector } from 'react-redux';
+
+export default function Dashboard() {
+    const user = useSelector((state) => state.user.data);
+
+    return (
+        <div>
+            <h1>Welcome to your Dashboard</h1>
+            <p>Name: {user.fullname || user.name}</p>
+            <p>Email: {user.email}</p>
+        </div>
+    );
+}
+```
+
+---
+
+## 🧪 Final Testing Steps
+
+1. Log in or register
+2. Try navigating to `/dashboard` – it should be accessible
+3. Log out – you should be redirected on next protected route access
+4. Refresh page – confirm Redux still works if you plan to sync token from `localStorage` (next step)
+
+---
+
+Would you like help persisting login state using the stored token on refresh?
