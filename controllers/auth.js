@@ -1,4 +1,3 @@
-const { validationResult } = require("express-validator")
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -7,17 +6,6 @@ require('dotenv').config();
 const User = db.User;
 
 exports.register = async (req, res) => {
-    const errors = validationResult(req);
-
-    // Return validations errors
-    if (!errors.isEmpty()) {
-        return res.status(401).json({
-            status: 'error',
-            msg: 'Validation error',
-            errors: errors.array()
-        });
-    }
-
     try {
         const { name, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -52,17 +40,6 @@ exports.register = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-    const errors = validationResult(req);
-
-    // Return validations errors
-    if (!errors.isEmpty()) {
-        return res.status(401).json({
-            status: 'error',
-            msg: 'Validation error',
-            errors: errors.array()
-        });
-    }
-    
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
