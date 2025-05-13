@@ -4,10 +4,19 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
     class User extends Model {
-        // This method is used to define model relations
-        // static associate(models){
+        static associate(models){
+            User.belongsToMany(models.Role, {
+                through: 'user_roles',
+                foreignKey: 'user_id',
+                otherKey: 'role_id',
+            });
 
-        // }
+            User.belongsToMany(models.Permission, {
+                through: 'user_permissions',
+                foreignKey: 'user_id',
+                otherKey: 'permission_id',
+            });
+        }
     }
 
     User.init({
