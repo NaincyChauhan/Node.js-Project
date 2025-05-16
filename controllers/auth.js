@@ -13,6 +13,8 @@ exports.register = async (req, res) => {
             name, email, password: hashedPassword,
         });
 
+        await user.assignRole('user');
+
         // genrate user token
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_KEY,
             {

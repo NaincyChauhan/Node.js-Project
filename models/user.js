@@ -17,6 +17,27 @@ module.exports = (sequelize, DataTypes) => {
                 otherKey: 'permission_id',
             });
         }
+
+        async assignRole(slug) {
+            const Role = sequelize.models.Role;
+            const role_ = await Role.findOne({ where: { slug } });
+            if(!role_) throw new Error(`${slug} role not found.`);
+            return this.addRole(role_);
+        }
+
+        async hasRoleCheck(slug) {
+            const Role = sequelize.models.Role;
+            const role_ = await Role.findOne({ where: { slug } });
+            if (!role_) throw new Error(`${slug} role not found.`);
+            return this.hasRole(role_);
+        }
+
+        async roleRemove(slug) {
+            const Role = sequelize.models.Role;
+            const role_ = await Role.findOne({ where: { slug } });
+            if (!role_) throw new Error(`${slug} role not found.`);
+            return this.removeRole(role_);
+        }
     }
 
     User.init({
