@@ -24,7 +24,7 @@ export default function LoginPage() {
 
         const response = await login(credentials);
 
-        if (response.status === "Success") {
+        if (response.status === "success") {
             const user = response.user;
             setMessage(response.msg);
             storeToken(user.token)

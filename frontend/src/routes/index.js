@@ -7,6 +7,7 @@ import Home from '../pages/HomePage';
 import DashboardPage from '../pages/DashboardPage';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProtectedRoute, PublicRoute } from './ProtectedRoute';
+import RolesPage from '../pages/admin/roles/RolesPage';
 
 function Router() {
     const dispatch = useDispatch();
@@ -30,6 +31,7 @@ function Router() {
                     <ProtectedRoute isAuthenticated={user.isAuthenticated} />
                 }>
                 <Route path='/dashboard' element={<DashboardPage />} />
+                <Route path='/roles' element={<RolesPage />} />
             </Route>
 
         </Routes>

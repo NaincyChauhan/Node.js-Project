@@ -10,7 +10,7 @@ const createSchema = Joi.object({
             'string.max': 'Name cannot exceed {#limit} characters',
             'any.required': 'Opps! Name is required'
         }),
-    email: Joi.string().email().required()
+    email: Joi.string().email().max(50).required()
         .messages({
             'string.email': 'Please provide a valid email address',
             'any.required': 'Opps! Email is required'

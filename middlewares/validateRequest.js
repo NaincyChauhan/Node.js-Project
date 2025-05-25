@@ -1,5 +1,6 @@
 const validateRequest = (schema) => (req, res, next) => {
-    const { error } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
+    const dataToValidate = req.body || {};
+    const { error } = schema.validate(dataToValidate, { abortEarly: false, stripUnknown: true });
     if (error) {
         const errors = error.details.map((detail) => {
             return { 

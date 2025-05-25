@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
+const roleRoutes = require('./routes/admin/role');
+const permissionRoutes = require('./routes/admin/permission');
 const passport = require('passport');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
@@ -22,6 +24,8 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 app.use('/api', authRoutes);
+app.use('/api/admin/role', roleRoutes);
+app.use('/api/admin/permission', permissionRoutes);
 app.use('/', (req, res) => {
     return res.json({ 'msg': "this is the home page."});
 });

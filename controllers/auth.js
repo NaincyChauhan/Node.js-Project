@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
             }
         )
         return res.status(200).json({
-            status: 'Success',
+            status: 'success',
             msg: 'User Created Successfully.',
             user: {
                 id: user.id,
@@ -62,7 +62,7 @@ exports.login = async (req, res) => {
         );
 
         return res.status(200).json({
-            status: 'Success',
+            status: 'success',
             msg: 'Logged in successfully.',
             user: {
                 name: user.name,

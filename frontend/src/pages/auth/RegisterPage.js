@@ -28,7 +28,7 @@ export default function RegisterPage() {
         
         const response = await register(formData);
 
-        if(response.status === "Success"){
+        if(response.status === "success"){
             const user = response.user;
             setMessage(response.msg);
             storeToken(user.token)

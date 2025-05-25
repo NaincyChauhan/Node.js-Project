@@ -10,7 +10,7 @@ const registerSchema = Joi.object({
             'string.max': 'Name cannot exceed {#limit} characters',
             'any.required': 'Opps! Name is required'
         }),
-    email: Joi.string().email().required()
+    email: Joi.string().email().max(50).required()
         .messages({
             'string.email': 'Please provide a valid email address',
             'any.required': 'Opps! Email is required'
@@ -33,7 +33,7 @@ const registerSchema = Joi.object({
 
 // Login Validation
 const loginSchema = Joi.object({
-    email: Joi.string().email().required(),
+    email: Joi.string().email().max(50).required(),
     password: Joi.string().min(3).max(30).required()
         .messages({
             'string.base': 'Password must be a string',
