@@ -4,7 +4,7 @@ const { create, update, views, destroy } = require("../../controllers/admin/role
 const { roleSchema } = require("../../requests/role");
 const router = Router();
 
-router.get('/view', views);
+router.get('/views', views);
 router.post('/create', validateRequest(roleSchema), create);
 router.post('/update/:id', validateRequest(roleSchema), update);
 router.post('/delete/:id', destroy);

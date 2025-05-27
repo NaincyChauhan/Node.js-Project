@@ -8,6 +8,7 @@ import DashboardPage from '../pages/DashboardPage';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProtectedRoute, PublicRoute } from './ProtectedRoute';
 import RolesPage from '../pages/admin/roles/RolesPage';
+import TestPage from '../pages/admin/roles/TestPage';
 
 function Router() {
     const dispatch = useDispatch();

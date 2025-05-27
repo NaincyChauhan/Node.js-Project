@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Role } = require('../../models');
+const { Role, Permission } = require('../../models');
 
 // View Roles
 exports.views = async (req, res) => {
@@ -116,4 +116,45 @@ const genrateSlug = (text) => {
         .replace(/[^a-z0-9\s-]/g, '')  // remove non-alphanumeric characters except space and hyphen
         .replace(/\s+/g, '-')          // replace spaces with hyphen
         .replace(/-+/g, '-');          // collapse multiple hyphens
+}
+
+exports.assignRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ids } = req.body;
+
+        if (!Array.isArray(ids)) {
+            return res.status(400).json({
+                status: 'Error',
+                msg: 'Invalid permissions format.',
+            });
+        }
+
+        const role = await Role.findByPk(id);
+
+        if (!role) {
+            return res.status(401).json({ status: "Error", msg: "Role not found", error: [] });
+        }
+
+        const permissions = await Permission.findAll({
+            where: {
+                id: {
+                    [Op.in]: [ids]
+                }
+            }
+        });
+
+        await role.setPermissions(permissions);
+
+        return res.status(201).json({
+            status: 'Success',
+            msg: "Permissions asigend to user successfully.",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            msg: 'Internal Server Error.',
+            errors: error
+        });
+    }
 }

@@ -6,6 +6,7 @@ const permissionRoutes = require('./routes/admin/permission');
 const passport = require('passport');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
+const authenticateJWT = require('./middlewares/authenticateJWT');
 
 require('dotenv').config();
 require('./config/passport');
@@ -24,8 +25,8 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 app.use('/api', authRoutes);
-app.use('/api/admin/role', roleRoutes);
-app.use('/api/admin/permission', permissionRoutes);
+app.use('/api/admin/role', authenticateJWT, roleRoutes);
+app.use('/api/admin/permission',authenticateJWT, permissionRoutes);
 app.use('/', (req, res) => {
     return res.json({ 'msg': "this is the home page."});
 });
