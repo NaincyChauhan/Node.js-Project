@@ -39,11 +39,21 @@ exports.create = async (req, res) => {
             data: { role }
         });
     } catch (error) {
-        // console.log("running here,", error)
+        // Sequelize unique constraint error
+        if(error.name === 'SequelizeUniqueConstraintError'){
+            const errors = error.errors.map(err => (
+                {
+                    field: err.path,
+                    msg: err.message,
+                }
+            ));
+
+            return res.status(400).json({status: 'error', msg: 'Validation Error', errors});
+        }
         return res.status(500).json({
             status: 'error',
             msg: 'Internal Server Error1.',
-            errors: error,
+            errors: [{ msg: error.message }],
         });
     }
 }
@@ -56,7 +66,7 @@ exports.update = async (req, res) => {
         const role = await Role.findByPk(id);
 
         if (!role) {
-            return res.status(401).json({ status: 'Error', msg: 'Role not found.', errors: [] });
+            return res.status(401).json({ status: 'error', msg: 'Role not found.', errors: [] });
         }
         const slug = genrateSlug(name);
         role.name = name;
@@ -69,17 +79,21 @@ exports.update = async (req, res) => {
             data: { role }
         });
     } catch (error) {
-        // if(error.name === 'SequelizeUniqueConstraintError') {
-        //     return res.status(409).json({
-        //         status: 'error',
-        //         msg: 'Role with this name already exists.',
-        //         errors: [],
-        //     })
-        // }
+        // Sequelize unique constraint error
+        if(error.name === 'SequelizeUniqueConstraintError'){
+            const errors = error.errors.map(err => (
+                {
+                    field: err.path,
+                    msg: err.message,
+                }
+            ));
+
+            return res.status(400).json({status: 'error', msg: 'Validation Error', errors});
+        }
         return res.status(500).json({
             status: 'error',
-            msg: 'Internal Server Error.',
-            errors: error,
+            msg: 'Internal Server Error1.',
+            errors: [{ msg: error.message }],
         });
     }
 }
@@ -133,7 +147,7 @@ exports.assignRole = async (req, res) => {
         const role = await Role.findByPk(id);
 
         if (!role) {
-            return res.status(401).json({ status: "Error", msg: "Role not found", error: [] });
+            return res.status(401).json({ status: "error", msg: "Role not found", error: [] });
         }
 
         const permissions = await Permission.findAll({

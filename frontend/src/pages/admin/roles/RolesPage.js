@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { create, destroy, update, views } from "../../../api/admin/crud";
+import { Modal, Button } from 'react-bootstrap';
+import DeleteDataModal from "../components/DeleteDataModal";
+import CreateDataModal from "../components/CreateDataModal";
 
 const RolesPage = () => {
-    const [formData, setFormData] = useState({ title: '' });
+    const [formData, setFormData] = useState({ name: '' });
     const [roles, setRoles] = useState([]);
     const [errors, setErrors] = useState([]);
     const [message, setMessage] = useState("");
@@ -33,32 +36,12 @@ const RolesPage = () => {
 
     // Delete role
     const handleDelete = async (roleId) => {
-        console.log("running here")
-        const response = await destroy( roleId, 'role');
+        const response = await destroy(roleId, 'role');
         if (response.status === 'Error') {
             setErrors(response.errors);
         } else {
-            setMessage(response.message);
+            setMessage(response.msg);
             await fetchRoles(); // Refresh roles list
-        }
-    }
-
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setErrors([]);
-        setMessage("");
-
-        const response = await create(formData, 'role');
-
-        if (response.status === 'Error') {
-            setErrors(response.errors);
-        } else {
-            setMessage(response.message);
         }
     }
 
@@ -68,22 +51,18 @@ const RolesPage = () => {
         if (res.status === 'Error') {
             setErrors(res.errors);
         } else {
-            setMessage(res.message);
             setRoles(res.roles);
         }
     }
 
     useEffect(() => {
-
         fetchRoles();
     }, []);
 
     return <>
         <div className="container mt-4">
             {/* Create Role button */}
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRoleModal">
-                Create Role
-            </button>
+            <CreateDataModal fetchData={fetchRoles} route={'role'} />
 
             {/* Roles Table */}
             <table className="table">
@@ -104,11 +83,11 @@ const RolesPage = () => {
                                     <td>
                                         <div>
                                             <button type="button" className="btn btn-success" data-bs-toggle="modal" data-bs-target={"#editRoleModal" + role.id}>Edit</button>
-                                            <button type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target={"#deleteRoleModal" + role.id}>Delete</button>
+                                            <DeleteDataModal data={role} onDelete={handleDelete} />
                                         </div>
 
                                         {/* <!-- Edit role Modal --> */}
-                                        <div className="modal fade" id={"editRoleModal" + role.id} tabIndex="-1" aria-labelledby={"editRoleModal" + role.id + "Label"} aria-hidden="true">
+                                        <div className="modal fade" id={"editRoleModal" + role.id} tabIndex="-1" aria-labelledby={"editRoleModal" + role.id + "Label"}>
                                             <div className="modal-dialog">
                                                 <div className="modal-content">
                                                     <div className="modal-header">
@@ -140,67 +119,15 @@ const RolesPage = () => {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* <!-- Delete role Modal --> */}
-                                        <div className="modal fade" id={"deleteRoleModal" + role.id} tabIndex="-1" aria-labelledby={"deleteRoleModalLabel" + role.id} aria-hidden="true">
-                                            <div className="modal-dialog">
-                                                <div className="modal-content">
-                                                    <div className="modal-header">
-                                                        <h1 className="modal-title fs-5" id={"deleteRoleModalLabel" + role.id}>Delete Role</h1>
-                                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div className="modal-body">
-                                                        Are you sure, you want to delete this role
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        <button type="button" className="btn btn-primary"  onClick={() => handleDelete(role.id)}>Delete</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </td>
                                 </tr>
                             ))
                         ) : (
-                            <> {console.log("running this11")} Roles not found.</>
+                            <> Roles not found.</>
                         )
                     }
-
                 </tbody>
             </table>
-
-            {/* Create Role modal */}
-            <div className="modal fade" id="createRoleModal" tabIndex="-1" aria-labelledby="createRoleModalLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="createRoleModalLabel">Create Role</h1>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            {
-                                errors.map((err, idx) => (
-                                    <p key={idx} style={{ color: 'red' }}>{err.msg}</p>
-                                ))
-                            }
-                            {message && <p style={{ color: 'green' }}>{message}</p>}
-
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label htmlFor="name" className="form-label">Name</label>
-                                    <input type="text" onChange={handleChange} className="form-control" id="name" name="name" placeholder="Role Name" aria-label="Name" />
-                                </div>
-                                <button type="submit" className="btn btn-primary">Submit</button>
-                            </form>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" className="btn btn-primary">Create</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </>;
 }
